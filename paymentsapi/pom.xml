@@ -91,9 +91,9 @@
 	</build>
 	<distributionManagement>
         <snapshotRepository>
-          <id>employees-data</id>
-          <name>employees-data</name>
-          <url>http://localhost:8091/repository/employees-data/</url>
+          <id>payment-data</id>
+          <name>payment-data</name>
+          <url>http://localhost:8091/repository/payment-data/</url>
         </snapshotRepository>
      </distributionManagement>
 	
