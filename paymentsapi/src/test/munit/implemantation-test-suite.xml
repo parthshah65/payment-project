@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="implemantation-test-suite.xml" />
+	<munit:test name="implemantation-test-suite-GetAllFlowTest" doc:id="d80ca9a5-6bc7-4dca-a95d-67bae2ad8b59" description="Test">
+		<munit:execution >
+			<munit:set-null-payload doc:name="Set null payload" doc:id="c3e0ff2b-4012-4d6b-b8a0-30f27bf9969d" />
+			<flow-ref doc:name="Flow-ref to GetAllFlow" doc:id="8b0d6779-e4d8-4c0f-99df-96556de3b641" name="GetAllFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="9d136894-80ed-4e3a-92d2-ac99d31db457" message='"Error in get all flow"' expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="implemantation-test-suite-GetByIDFlowTest" doc:id="71652d17-478c-470d-8319-d9cf0c12666c" description="Test">
+		<munit:execution >
+			<munit:set-null-payload doc:name="Set null payload" doc:id="fc46e114-0b09-4033-9fae-26ccf034bc65" />
+			<flow-ref doc:name="Flow-ref to GetByIDFlow" doc:id="054f0477-573a-4bd7-a9b8-ed7f187f5a27" name="GetByIDFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="8dd5726b-f41a-4e69-8818-323c1f1ba8e2" message='"error, check the get by Id"' expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="implemantation-test-suite-postFlowTest" doc:id="f148c697-6a9b-49b9-83f9-c026b790c6e8" description="Test">
+		<munit:execution >
+			<munit:set-null-payload doc:name="Set null payload" doc:id="05793a06-9fff-4c66-a638-6ee54cbb75fc" />
+			<flow-ref doc:name="Flow-ref to postFlow" doc:id="03ea4e5b-5e4b-4f85-9447-db8b398dd282" name="postFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="186fbed4-85a6-4742-8a08-d81b4bffbcc4" actual="#[payload.'message']" expected='#["Payment Details Added"]' message='#["Error check the post flow"]' />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="implemantation-test-suite-GetByIDFlowTest1" doc:id="116ae6e2-0049-40f5-99ba-762972c06a06" description="Test">
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="36ea4029-1efa-4f17-a3bc-358807636b20" >
+				<munit:variables >
+					<munit:variable key="chequeNumber" value="BK11223344" />
+				</munit:variables>
+			</munit:set-event>
+			<logger level="INFO" doc:name="Logger" doc:id="2d94cf9a-eea9-4723-941b-4d6b861558db" message="#[vars.chequeNumber]"/>
+			<flow-ref doc:name="Flow-ref to GetByIDFlow" doc:id="2a24e44c-80ca-4fc7-aebb-05d3bd5d044e" name="GetByIDFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="8ed8c8f0-44f2-4009-90a5-6e2ca5c2be17" message='"error"' expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="getexample" format="json">
+      <types:shape format="weave" example="examples/metadata1.json"><![CDATA[%dw 2.0
+
+type getexample = Array<{|  customerNumber: Number {"typeId": "int"},   chequeNumber: String,   paymentDate: String,   amount: Number {"typeId": "double"}|}> {"example": "[{\\\"customerNumber\\\":100,\\\"chequeNumber\\\":\\\"0123TP985\\\",\\\"paymentDate\\\":\\\"2020-05-08T02:35:00\\\",\\\"amount\\\":20000.00},{\\\"customerNumber\\\":101,\\\"chequeNumber\\\":\\\"0123TP945\\\",\\\"paymentDate\\\":\\\"2020-05-08T02:45:00\\\",\\\"amount\\\":10000.00}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="getByIDExample" format="json">
+      <types:shape format="weave" example="examples/metadata2.json"><![CDATA[%dw 2.0
+
+type getByIDExample = {|
+  customerNumber: Number {"typeId": "int"}, 
+  chequeNumber: String, 
+  paymentDate: String, 
+  amount: Number {"typeId": "double"}
+|} {"example": "{\\\"customerNumber\\\":100,\\\"chequeNumber\\\":\\\"0123TP985\\\",\\\"paymentDate\\\":\\\"2020-05-08T02:35:00\\\",\\\"amount\\\":20000.00}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#ab8d92e9-a262-42db-bfc8-03110ab92627">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="getexample"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#d37309e2-fbe7-4c40-8f2e-e0ea355eaa16">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="getByIDExample"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<flow name="GetAllFlow" doc:id="dcc02bca-7e5a-4b23-9d4f-997c13bcd404" >
+		<db:select doc:name="Select" doc:id="b92de3bb-b5d5-4db0-8739-0ef1c9e80f22" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from Payments]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="ab8d92e9-a262-42db-bfc8-03110ab92627" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	customerNumber: payload01.customerNumber default 0,
+	chequeNumber: payload01.ChequeNumber,
+	paymentDate: payload01.paymentDate as String default "",
+	amount: payload01.amount default 0
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="GetByIDFlow" doc:id="d5ef8478-52ee-411e-998d-d2409d76e468" >
+		<db:query-single doc:name="Query single" doc:id="621b7c2e-bedf-46b0-8151-5719d911048e" config-ref="Database_Config">
+			<error-mapping targetType="DB1:BAD_SQL_SYNTAX" sourceType="DB:BAD_SQL_SYNTAX"/>
+			<db:sql ><![CDATA[select * from Payments where ChequeNumber= :cNo ]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	cNo: vars.chequeNumber
+}]]]></db:input-parameters>
+		</db:query-single>
+		<choice doc:name="Choice" doc:id="c5a89d07-45cf-4eaf-87c7-7bc9ee3b8256" >
+			<when expression="#[sizeOf(payload)&gt;0]">
+				<ee:transform doc:name="Transform Message" doc:id="d37309e2-fbe7-4c40-8f2e-e0ea355eaa16">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	customerNumber: payload.customerNumber default 0,
+	chequeNumber: payload.ChequeNumber,
+	paymentDate: payload.paymentDate as String default "",
+	amount: payload.amount default 0
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<set-payload value='#["Error, check the get by Id flow"]' doc:name="Set Payload" doc:id="fd8b4fa1-027d-4592-92ab-60d3889400ea" />
+				<set-variable value="500" doc:name="httpStatus" doc:id="d9e1782b-2321-47f2-b836-cfa83dc1562b" variableName="httpStatus"/>
+			</otherwise>
+		</choice>
+	</flow>
+	<sub-flow name="Variable_Sub_Flow" doc:id="fd08b220-59b0-4b77-8464-4fa1a6e24b8c" >
+		<set-variable value="#[payload.customerNumber]" doc:name="customerNumber" doc:id="586681d2-f9a3-4e1b-94b4-057a34382f69" variableName="customerNumber"/>
+		<set-variable value="#[payload.paymentDate]" doc:name="paymentDate" doc:id="97a0395a-8209-4eae-8739-8b70914c2129" variableName="paymentDate"/>
+		<set-variable value="#[payload.amount]" doc:name="amount" doc:id="fe3aa473-3d41-4fc5-b76f-95d8ec7cf545" variableName="amount"/>
+	</sub-flow>
+	<flow name="postFlow" doc:id="a43c4415-4a3f-4554-9c38-7930fddc6bf9" >
+		<flow-ref doc:name="Flow Reference" doc:id="89471fbd-3854-4e52-94ac-d6830f6b2254" name="Variable_Sub_Flow"/>
+		<db:query-single doc:name="Query single" doc:id="d8b2f249-3674-4c16-ba67-5a5a430869e0" config-ref="Database_Config">
+			<db:sql ><![CDATA[select max(ChequeNumber) from Payments]]></db:sql>
+		</db:query-single>
+		<validation:is-not-null doc:name="Is not null" doc:id="56363748-e084-43d2-a0e4-d5f0826d25c6" value="#[payload]" message="#[&quot;Cheque Number shouldn't be null&quot;]">
+			<error-mapping targetType="PF:NULL" />
+		</validation:is-not-null>
+		<ee:transform doc:name="Transform Message" doc:id="020ceccd-701f-40e1-8f8a-b45d9e59b35c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	cNo: "BK" ++ ((payload."max(ChequeNumber)"[2 to 9] as Number)+1)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:insert doc:name="Insert" doc:id="7cd2557c-30c7-4dd0-a195-3f4f9441a040" config-ref="Database_Config">
+			<db:sql ><![CDATA[insert into Payments (customerNumber, ChequeNumber, paymentDate, amount) values (:customerNumber, :ChequeNumber, :paymentDate, :amount)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	'customerNumber': vars.customerNumber,
+	'ChequeNumber': payload.cNo,
+	'paymentDate': vars.paymentDate,
+	'amount': vars.amount
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="02f56a0a-aabb-4e36-ae9b-25a8d6a75be0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Payment Details Added"
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="201" doc:name="httpStatus" doc:id="746c4f2b-d26a-4d31-a7ae-f170c6f1baa1" variableName="httpStatus"/>
+	</flow>
+</mule>
